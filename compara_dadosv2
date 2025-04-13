@@ -1,0 +1,39 @@
+import pandas as pd
+
+## Caminhos dos diretórios que puxam os qrquivos e aonde vai salvar | entrada do arquivo e saida
+csv_path = r"C:\Users\roberto.souza\Downloads\prices-11-04-2025.csv"
+excel_path = r"C:\Users\roberto.souza\Downloads\querysb0.csv"
+saida_path = r"C:\Users\roberto.souza\Downloads\comparacao_prices.xlsx"
+
+## Faz a leitura dos arquivos
+df_csv = pd.read_csv(csv_path, sep=";")
+df_excel = pd.read_csv(csv_path, sep=";")
+
+# Padronizar colunas
+df_csv.columns = df_csv.columns.str.strip().str.lower()
+df_excel.columns = df_excel.columns.str.strip().str.lower()
+
+## Filtrar apenas preços diferentes de zero no CSV e Excel
+df_csv = df_csv[(df_csv['price'] != 0) | (df_csv['promotional_price'] != 0)]
+df_excel = df_excel[(df_excel['price'] != 0) | (df_excel['promotional_price'] != 0)]
+
+
+# Comparação dos arquivos
+df_comparado = pd.merge(
+    df_csv,
+    df_excel,
+    on=['storecode', 'sku'],
+    how='inner',  # ✅ só traz o que tem nos dois
+    suffixes=('_csv', '_banco')
+)
+
+# Comparar os preços
+df_comparado['preco_igual'] = df_comparado['price_csv'] == df_comparado['price_banco']
+
+# Faz a exportação para excel
+df_comparado.to_excel(saida_path, index=False)
+
+
+print("Arquivo de comparação criado com sucesso! \nRoberto é foda!!!")
+
+## É trabalho honesto
